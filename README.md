@@ -34,5 +34,5 @@ python consistency.py -f FASTA_CONTIG_FILE -p TAXONOMIC_ASSIGNMENTS -m SCAFFOLD_
 ### Confusion matrices
 ```
 python confusion_matrix.py -f FASTA_CONTIG_FILE -p TAXONOMIC_ASSIGNMENTS -t TRUE_TAXONOMIC_LABELS \
--d NCBI_TAXONOMY_IN_SQLITE3_FORMAT -o ./prefix_ -r RANK
+-d NCBI_TAXONOMY_IN_SQLITE3_FORMAT -o ./prefix_ 
 ```
