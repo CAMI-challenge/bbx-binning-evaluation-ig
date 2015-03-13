@@ -28,11 +28,11 @@ def removeNonDna(seq):
     return re.sub(r'[^ATGCatgc]+', 'N', seq).upper()
 
 
-def noNewLine(str):
+def noNewLine(line):
     """
         Delete all '\n' and '\r' characters in a string.
     """
-    return str.replace('\n', '').replace('\r','')
+    return line.replace('\n', '').replace('\r', '')
 
 
 def createTagFilePath(dstDir, fileNameFromPath, tag):
@@ -42,8 +42,9 @@ def createTagFilePath(dstDir, fileNameFromPath, tag):
     """
     lastDotIdx = fileNameFromPath.rfind('.')
     return os.path.join(os.path.normpath(dstDir),
-                        os.path.basename(os.path.normpath(str(fileNameFromPath[0:lastDotIdx] +  fileNameFromPath[lastDotIdx:]
-                                                            + '.' + tag))))
+                        os.path.basename(os.path.normpath(str(fileNameFromPath[0:lastDotIdx]
+                                                              + fileNameFromPath[lastDotIdx:]
+                                                              + '.' + tag))))
 
 
 def getMothurOutputFilePath(inputFastaFilePath, refTaxonomyFilePath, suffix='.taxonomy'):
@@ -52,11 +53,11 @@ def getMothurOutputFilePath(inputFastaFilePath, refTaxonomyFilePath, suffix='.ta
     """
     dirName = os.path.dirname(inputFastaFilePath)
     fastaBaseName = os.path.basename(inputFastaFilePath)
-    fastaPart = fastaBaseName[0:fastaBaseName.rindex('.')] # without suffix
+    fastaPart = fastaBaseName[0:fastaBaseName.rindex('.')]  # without suffix
     taxBaseName = os.path.basename(refTaxonomyFilePath)
-    taxPart = taxBaseName[0:taxBaseName.rindex('.')] # without suffix
+    taxPart = taxBaseName[0:taxBaseName.rindex('.')]  # without suffix
     if '.' in taxPart:
-        taxPart = taxPart[(taxPart.rindex('.') + 1):] # from last comma till the end
+        taxPart = taxPart[(taxPart.rindex('.') + 1):]  # from last comma till the end
 
     return os.path.join(dirName, str(fastaPart + '.' + taxPart + suffix))
 
@@ -67,7 +68,7 @@ def seqFileCmp(file1, file2):
     """
     seqList1 = seqFileToSeqList(file1)
     seqList2 = seqFileToSeqList(file2)
-    if (len(seqList1) != len(seqList2)):
+    if len(seqList1) != len(seqList2):
         print "The files contain different number of sequences", len(seqList1), len(seqList2)
         return False
     else:
@@ -103,7 +104,6 @@ def seqFileCmp(file1, file2):
     else:
         print "The number of unique sequences is: ", len(s1)
 
-
     if len(seqFoundInS2) == len(seqList1):
         print "Both files contain the same sequences"
         return True
@@ -112,15 +112,16 @@ def seqFileCmp(file1, file2):
         return False
 
 
-def seqFileToSeqList(file):
+def seqFileToSeqList(fileName):
     """
         @deprecated: use functionality of algbioi.com.fasta
     """
     seqList = []
+    f = None
     try:
-        f = open(os.path.normpath(file),'r')
+        f = open(os.path.normpath(fileName), 'r')
     except Exception:
-        print "Cannot open file:", file
+        print "Cannot open file:", fileName
         raise
     else:
         name = ''
@@ -130,24 +131,25 @@ def seqFileToSeqList(file):
             if re.match('>', line):
                 if seq != '':
                     assert name != ''
-                    seqList.append(seq) #store seq
+                    seqList.append(seq)  # store seq
                     seq = ''
-                name = line.replace('>','')
+                name = line.replace('>', '')
             else:
                 seq += line
         if seq != '':
             assert name != ''
-            seqList.append(seq) #store seq
+            seqList.append(seq)  # store seq
         return seqList
     finally:
-        f.close()
+        if f is not None:
+            f.close()
 
 
-class Node():
+class NodeNewick():
     def __init__(self, label, nodeList=None):
         """
             @attention: needs to be tested !!!
-            @type nodeList: list of Node
+            @type nodeList: list of NodeNewick
             @type label: str
         """
         assert nodeList is None or len(nodeList) > 0
@@ -163,12 +165,13 @@ class Node():
         assert self.nodeList is not None
         return self.nodeList
 
+
 def getNewick(node):
     """
         Get a tree in a newick format, call with a rood of the tree.
 
         @attention: needs to be tested !!!
-        @type node: Node
+        @type node: NodeNewick
     """
     if node.isLeaf():
         return node.label
@@ -178,7 +181,3 @@ def getNewick(node):
             childNewickList.append(getNewick(child))
         return '(' + ','.join(childNewickList) + ')' + node.label
 
-# if __name__ == "__main__":
-#     inputFastaFilePath = '/net/metagenomics/projects/PPSmg/tests/V35/07/working/contigsMappedBlast1000.fna.ids.23S_rRNA.fna'
-#     refTaxonomyFilePath = '/net/metagenomics/projects/PPSmg/data/silva/lsuparc_silva106_ncbitax.bacteria+archaea.tax'
-#     print getMothurOutputFilePath(inputFastaFilePath, refTaxonomyFilePath)

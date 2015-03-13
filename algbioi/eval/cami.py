@@ -36,7 +36,6 @@ def concatenate(directory, outputFile):
     out.close()
 
 
-
 def outToCami(ppspOutFile):
     """
         Creates a cami output file, in format:

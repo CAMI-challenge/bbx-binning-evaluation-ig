@@ -16,18 +16,53 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-    Contains functionality to simplify work with FASTA files.
+    Contains basic functionality to work with FASTA files.
 """
 
 import sys
 import os
 import re
 import types
+import gzip
 from Bio import SeqIO
 
 from algbioi.com.csv import OutFileBuffer
 from algbioi.com.common import removeNonDna
 from algbioi.com.common import noNewLine
+
+
+def cmpSeqFiles(filePath1, filePath2, verbose=False, format='fastq'):
+    """
+        Compares two sequence files.
+
+        @attention: uses SeqIO.parse, thus can be slow for very large files
+
+        @return: True if both files contain the same entries, else False.
+    """
+    d1 = {}
+    d2 = {}
+    f1 = open(filePath1)
+    f2 = open(filePath2)
+    for record in SeqIO.parse(f1, format):
+        d1[record.id] = record
+    for record in SeqIO.parse(f2, format):
+        d2[record.id] = record
+    f1.close()
+    f2.close()
+    if len(d1) != len(d2):
+        if verbose:
+            print('Different lengths %s %s' % (len(d1), len(d2)))
+        return False
+    for k, v1 in d1.iteritems():
+        v2 = d2[k]
+        if str(v1) != str(v2) \
+                or str(v1.letter_annotations['phred_quality']) != str(v2.letter_annotations['phred_quality']):
+            if verbose:
+                print('Different sequences! %s %s' % (v1, v2))
+            return False
+    if verbose:
+        print('Files contain the same sequences: %s %s' % (filePath1, filePath2))
+    return True
 
 
 def splitPairedReads(inPairedFasta, outEvenFasta, outOddFasta):
@@ -53,17 +88,19 @@ class SplitFasta():
         self._evenFasta.close()
 
 
-def filterOutSequences(inFileName, outFileName, allowedNamesSet, formatName="fasta", seqNameModifyFunction = None):
+def filterOutSequences(inFileName, outFileName, allowedNamesSet, formatName="fasta", seqNameModifyFunction=None):
     """
         From the input fasta file filter out sequences their names are not contained in the allowedNamesSet.
 
         @param allowedNamesSet: the set of entries that are allowed as a sequence names
-        @param seqNameModifyFunction: a sequence`s name is modified by this function and then compared to the allowedNamesSet
+        @param seqNameModifyFunction: a sequence`s name is modified by this function and then compared to the
+        allowedNamesSet
     """
     outFileBuffer = OutFileBuffer(outFileName)
     recordCondition = RecordConditionFilterOutSequences(allowedNamesSet, seqNameModifyFunction)
     parser = RecordFilter(outFileBuffer, formatName, recordCondition)
     _forEachRecord(inFileName, parser)
+
 
 def filterOutNonDna(inFileName, outFileName):
     outFileBuffer = OutFileBuffer(outFileName)
@@ -81,10 +118,13 @@ def getSequenceToBpDict(fastaFilePath):
 class SeqToBpParser():
     def __init__(self):
         self._seqToBp = dict([])
+
     def parse(self, record):
         self._seqToBp[record.id] = len(str(record.seq))
+
     def getSeqToBpDict(self):
         return self._seqToBp
+
     def getFormatName(self):
         return "fasta"
 
@@ -99,10 +139,13 @@ def getSequencesToList(fastaFilePath):
 class SeqToListParser():
     def __init__(self):
         self._seqToList = []
+
     def parse(self, record):
         self._seqToList.append((str(record.id), noNewLine(str(record.seq))))
+
     def getSeqToList(self):
         return self._seqToList
+
     def getFormatName(self):
         return "fasta"
 
@@ -123,7 +166,7 @@ class RemoveNonDnaParser():
 
 
 class RecordConditionFilterOutSequences():
-    def __init__(self, allowedNamesSet, seqNameModifyFunction = None):
+    def __init__(self, allowedNamesSet, seqNameModifyFunction=None):
         self.allowedNamesSet = allowedNamesSet
         self.seqNameModifyFunction = seqNameModifyFunction
 
@@ -131,10 +174,10 @@ class RecordConditionFilterOutSequences():
         """
             If the record.id (modified by the function) is in the allowedNamesSet then the entry will be accepted.
         """
-        id = record.id
-        if self.seqNameModifyFunction != None:
-            id = self.seqNameModifyFunction(id)
-        if id in self.allowedNamesSet:
+        idr = record.id
+        if self.seqNameModifyFunction is not None:
+            idr = self.seqNameModifyFunction(idr)
+        if idr in self.allowedNamesSet:
             return True
         else:
             return False
@@ -195,7 +238,10 @@ def fastaFileToDictWholeNames(filePath):
     seqIdToSeq = {}
     f = None
     try:
-        f = open(os.path.normpath(filePath),'r')
+        if filePath.endswith('.gz'):
+            f = gzip.open(os.path.normpath(filePath), mode='r')
+        else:
+            f = open(os.path.normpath(filePath), 'r')
     except Exception:
         print "Cannot open file:", filePath
         raise
@@ -209,7 +255,7 @@ def fastaFileToDictWholeNames(filePath):
                     assert name != ''
                     seqIdToSeq[name] = seq
                     seq = ''
-                name = line.replace('>','')
+                name = line.replace('>', '')
             else:
                 seq += line
         if seq != '':
@@ -223,7 +269,7 @@ def fastaFileToDictWholeNames(filePath):
 
 class _RecordStorage():
     def __init__(self, formatName='fasta'):
-        self._seqNameToSeq = dict([])
+        self._seqNameToSeq = {}
         self._formatName = formatName
 
     def parse(self, record):
