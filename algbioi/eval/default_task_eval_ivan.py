@@ -1,10 +1,28 @@
+#!/usr/bin/env python
+
 """
+    Copyright (C) 2015  Ivan Gregor
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
     This module is meant for the CAMi evaluation container as a default task.
     It encapsulates calling of the following algbioi.eval scripts:
     accuracy.py
     consistency.py
     confusion_matrix.py
 """
+
 import os
 import sys
 import argparse
@@ -33,8 +51,7 @@ def _main():
     parser = argparse.ArgumentParser(description='Default task: PPS+ evaluation', epilog='')
 
     parser.add_argument('-b', '--cont-binning-file', nargs=1, type=file, required=True,
-                        help='Binning file containing labels assigned to contigs.', metavar='assignments.csv',
-                        dest='b')
+                        help='Binning file containing labels assigned to contigs.', metavar='assignments.csv', dest='b')
 
     parser.add_argument('-t', '--cont-true-binning-file', nargs=1, type=file, required=True,
                         help='Binning file containing true labels for the contigs.', metavar='labels.csv', dest='t')
@@ -46,21 +63,21 @@ def _main():
                         help='Scaffold contig mapping, tab separated.', metavar='mapping.csv', dest='m')
 
     parser.add_argument('-n', '--cont-ncbi-taxonomy', nargs=1, required=False,
-                        help='Directory containing the NCBI names.dmp and nodes.dmp files.', metavar='taxonomy_dir', dest='n')
+                        help='Directory containing the NCBI names.dmp and nodes.dmp files.', metavar='taxonomy_dir',
+                        dest='n')
 
     parser.add_argument('-o', '--cont-output-dir', nargs=1, required=True,
                         help='Output directory.', metavar='output_dir', dest='o')
 
     parser.add_argument('-j', '--default-job', nargs='+',
                         help='What task/job should be performed (p~precision/recall, s~scaff-contig consistency, '
-                             'c~confusion tables, default if not spec compute all)', metavar='', dest='j')
+                             'c~confusion tables, default - if not spec compute all)', metavar='', dest='j')
 
     args = parser.parse_args()
 
     # read and check the arguments
     seqIdToBp = None
     scaffToContig = None
-    taxonomyPath = None
     binning = None
     trueBinning = None
     outputDir = None
@@ -77,18 +94,20 @@ def _main():
         trueBinningFile = args.t[0].name
         trueBinning = cami.readAssignments(trueBinningFile)
 
-    if args.f and len(args.f) == 1 and os.path.isfile(args.f[0].name) :
-        contigsFileListing = args.f[0].name
-        for line in open(contigsFileListing):
-            if os.path.isfile(line.strip()):
-                d = fasta.getSequenceToBpDict(line.strip())
-                if seqIdToBp is None:
-                    seqIdToBp = d
-                else:
-                    count = len(d) + len(seqIdToBp)
-                    seqIdToBp.update(d)
-                    if count > len(seqIdToBp):
-                        sys.stderr.write('The fasta files contain duplicate entries!')
+    if args.f and len(args.f) == 1 and os.path.isfile(args.f[0].name):
+        seqIdToBp = fasta.getSequenceToBpDict(args.f[0].name)
+
+        # contigsFileListing = args.f[0].name
+        # for line in open(contigsFileListing):
+        #     if os.path.isfile(line.strip()):
+        #         d = fasta.getSequenceToBpDict(line.strip())
+        #         if seqIdToBp is None:
+        #             seqIdToBp = d
+        #         else:
+        #             count = len(d) + len(seqIdToBp)
+        #             seqIdToBp.update(d)
+        #             if count > len(seqIdToBp):
+        #                 sys.stderr.write('The fasta files contain duplicate entries!')
 
     if args.m and len(args.m) == 1 and os.path.isfile(args.m[0].name):
         scaffoldContigMapping = args.m[0].name
@@ -147,6 +166,66 @@ def _main():
         cons.close()
         out.close()
 
+    createEvalMetaFile(outputDir)
+
+
+def createEvalMetaFile(outputDir):
+
+    precisionRecallFile = os.path.join(outputDir, 'precision_recall.csv')
+    precisionRecallCorrectionFile = os.path.join(outputDir, 'precision_recall_correction.csv')
+    confusionMatrixDir = os.path.join(outputDir, 'confusion_matrix')
+    consistencyFile = os.path.join(outputDir, 'consistency.txt')
+
+    metaOut = csv.OutFileBuffer(os.path.join(outputDir, 'output.yaml'))
+    # creates a metafile describing the results
+
+    if os.path.isfile(precisionRecallFile):
+        metaOut.writeText('''title: Precision and recall
+type:
+    name: csv
+    options:
+        header: "#"
+        separator: ","
+    data:
+        reference: %s\n\n''' % precisionRecallFile)
+
+    if os.path.isfile(precisionRecallCorrectionFile):
+        metaOut.writeText('''title: Precision and recall with correction
+type:
+    name: csv
+    options:
+        header: "#"
+        separator: ","
+    data:
+        reference: %s\n\n''' % precisionRecallCorrectionFile)
+
+    if os.path.isfile(consistencyFile):
+                metaOut.writeText('''title: Consistency
+type:
+    name: txt
+    data:
+        reference: %s\n\n''' % consistencyFile)
+
+    if os.path.isdir(confusionMatrixDir):
+
+        for f in os.listdir(confusionMatrixDir):
+
+            filePath = os.path.join(confusionMatrixDir, f)
+            rank = filePath.rsplit('.', 2)[1].split('_')[0]
+            metaOut.writeText('''title: Confusion table for %s
+type:
+    name: csv
+    options:
+        header: ""
+        separator: ","
+    description:
+        inline: Where rows correspond to the true assignments and columns correspond to the assignments by a binning method.
+    data:
+        reference: %s\n\n''' % (rank, filePath))
+
+    metaOut.close()
+
 
 if __name__ == "__main__":
     _main()
+    # createEvalMetaFile('/Users/ivan/Documents/nobackup/tmp10')  # test yaml
