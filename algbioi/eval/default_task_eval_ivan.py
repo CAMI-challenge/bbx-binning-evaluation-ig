@@ -176,7 +176,7 @@ def createEvalMetaFile(outputDir):
     confusionMatrixDir = os.path.join(outputDir, 'confusion_matrix')
     consistencyFile = os.path.join(outputDir, 'consistency.txt')
 
-    metaOut = csv.OutFileBuffer(os.path.join(outputDir, 'output.yaml'))
+    metaOut = csv.OutFileBuffer(os.path.join(outputDir, 'biobox.yaml'))
     # creates a metafile describing the results
 
     if os.path.isfile(precisionRecallFile):
