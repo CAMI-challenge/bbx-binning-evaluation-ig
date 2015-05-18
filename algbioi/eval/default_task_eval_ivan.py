@@ -96,6 +96,7 @@ def _main():
 
     if args.f and len(args.f) == 1 and os.path.isfile(args.f[0].name):
         seqIdToBp = fasta.getSequenceToBpDict(args.f[0].name)
+
         # contigsFileListing = args.f[0].name
         # for line in open(contigsFileListing):
         #     if os.path.isfile(line.strip()):
