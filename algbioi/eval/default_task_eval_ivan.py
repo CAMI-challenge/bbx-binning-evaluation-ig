@@ -180,31 +180,19 @@ def createEvalMetaFile(outputDir):
     # creates a metafile describing the results
 
     if os.path.isfile(precisionRecallFile):
-        metaOut.writeText('''title: Precision and recall
-type:
-    name: csv
-    options:
-        header: "#"
-        separator: ","
-    data:
-        reference: %s\n\n''' % precisionRecallFile)
+        metaOut.writeText('''name: Precision and recall
+    type: csv
+    value:  %s\n\n''' % precisionRecallFile)
 
     if os.path.isfile(precisionRecallCorrectionFile):
-        metaOut.writeText('''title: Precision and recall with correction
-type:
-    name: csv
-    options:
-        header: "#"
-        separator: ","
-    data:
-        reference: %s\n\n''' % precisionRecallCorrectionFile)
+        metaOut.writeText('''name: Precision and recall with correction
+    type: csv
+    value: %s\n\n''' % precisionRecallCorrectionFile)
 
     if os.path.isfile(consistencyFile):
-                metaOut.writeText('''title: Consistency
-type:
-    name: txt
-    data:
-        reference: %s\n\n''' % consistencyFile)
+                metaOut.writeText('''name: Consistency
+    type: txt
+    value: %s\n\n''' % consistencyFile)
 
     if os.path.isdir(confusionMatrixDir):
 
@@ -212,16 +200,10 @@ type:
 
             filePath = os.path.join(confusionMatrixDir, f)
             rank = filePath.rsplit('.', 2)[1].split('_')[0]
-            metaOut.writeText('''title: Confusion table for %s
-type:
-    name: csv
-    options:
-        header: ""
-        separator: ","
-    description:
-        inline: Where rows correspond to the true assignments and columns correspond to the assignments by a binning method.
-    data:
-        reference: %s\n\n''' % (rank, filePath))
+            metaOut.writeText('''name: Confusion table for %s
+    description: Where rows correspond to the true assignments and columns correspond to the assignments by a binning method.
+    type: csv
+    value: %s\n\n''' % (rank, filePath))
 
     metaOut.close()
 
