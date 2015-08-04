@@ -171,28 +171,35 @@ def _main():
 
 def createEvalMetaFile(outputDir):
 
-    precisionRecallFile = os.path.join(outputDir, 'precision_recall.csv')
-    precisionRecallCorrectionFile = os.path.join(outputDir, 'precision_recall_correction.csv')
+    precisionRecallFile = 'precision_recall.csv'
+    precisionRecallCorrectionFile = 'precision_recall_correction.csv'
     confusionMatrixDir = os.path.join(outputDir, 'confusion_matrix')
-    consistencyFile = os.path.join(outputDir, 'consistency.txt')
+    consistencyFile =  'consistency.txt'
 
     metaOut = csv.OutFileBuffer(os.path.join(outputDir, 'biobox.yaml'))
     # creates a metafile describing the results
-
-    if os.path.isfile(precisionRecallFile):
-        metaOut.writeText('''name: Precision and recall
+    metaOut.writeText("version: 0.1.1\n")
+    metaOut.writeText("results:\n")
+    if os.path.isfile(outputDir + "/" + precisionRecallFile):
+        metaOut.writeText('''  - name: Precision and recall
     type: csv
-    value:  %s\n\n''' % precisionRecallFile)
+    description: Precision and recall
+    inline:false
+    value:  %s\n''' % precisionRecallFile)
 
-    if os.path.isfile(precisionRecallCorrectionFile):
-        metaOut.writeText('''name: Precision and recall with correction
+    if os.path.isfile(outputDir + "/" + precisionRecallCorrectionFile):
+        metaOut.writeText('''  - name: Precision and recall with correction
     type: csv
-    value: %s\n\n''' % precisionRecallCorrectionFile)
+    inline:false
+    description: Precision and recall with correction
+    value: %s\n''' % precisionRecallCorrectionFile)
 
-    if os.path.isfile(consistencyFile):
-                metaOut.writeText('''name: Consistency
+    if os.path.isfile(outputDir + "/" + consistencyFile):
+                metaOut.writeText('''  - name: Consistency
     type: txt
-    value: %s\n\n''' % consistencyFile)
+    inline:false
+    description: Consistency
+    value: %s\n''' % consistencyFile)
 
     if os.path.isdir(confusionMatrixDir):
 
