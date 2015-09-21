@@ -5,7 +5,7 @@ ADD / /opt
 ENV PYTHONPATH /opt
 
 # Locations for biobox file validator
-ENV VALIDATOR /bbx/validator/
+ENV VALIDATOR /usr/local/bin
 ENV BASE_URL https://s3-us-west-1.amazonaws.com/bioboxes-tools/validate-biobox-file
 ENV VERSION  0.x.y
 RUN mkdir -p ${VALIDATOR}
