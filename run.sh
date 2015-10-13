@@ -6,20 +6,28 @@ set -o errexit
 # exit script if Variable is not set
 set -o nounset
 
-INPUT=/bbx/input/biobox.yaml
-OUTPUT=/bbx/output
+INPUT="${BBX_MNTDIR:-/bbx}/input/biobox.yaml"
+OUTPUT="${BBX_MNTDIR:-/bbx}/output"
 METADATA=/bbx/metadata
+
+# create cache
+CACHE="${BBX_CACHEDIR:-/bbx/mnt/cache}"
+mkdir -p "$CACHE"
 
 # Since this script is the entrypoint to your container
 # you can access the task in `docker run task` as the first argument
-TASK=$1
+TASK=${1:-default}
 
 # Ensure the biobox.yaml file is valid
 validate-biobox-file \
   --input ${INPUT} \
   --schema /schema.yaml \
 
-mkdir -p ${OUTPUT}
+# check if output folder exists/is mounted
+if ! [ -d "$OUTPUT" ]; then
+  echo "$OUTPUT does not exist."
+  exit 1
+fi
 
 # Parse the read locations from this file
 FASTA=$(yaml2json < $INPUT  | jq --raw-output '.arguments[] | select(.fasta) | .fasta | .value  ' )
@@ -28,15 +36,24 @@ BINNING_ASSIGNMENTS=$(yaml2json < $INPUT  | jq --raw-output ' .arguments[] | sel
 SCAFFOLD_CONTIG_MAPPING=$(yaml2json < $INPUT  | jq --raw-output '  .arguments[] | select(.scaffold_contig_mapping) | .scaffold_contig_mapping ')
 DATABASES=$(yaml2json < $INPUT  | jq --raw-output ' .arguments[] | select(.databases) | .databases[] | select(.id == "ncbi_taxonomy") | .value ')
 
-#create temporary directory in /tmp
-TMP_DIR=$(mktemp -d)
-
 # Use grep to get $TASK in /Taskfile
 CMD=$(egrep ^${TASK}: /Taskfile | cut -f 2 -d ':')
 if [[ -z ${CMD} ]]; then
   echo "Abort, no task found for '${TASK}'."
   exit 1
 fi
+
+# Functions
+binning2tax() { cat $@ | grep -v -e '^@' -e '^#' -e '^$' | cut -f 1,2; } # bioboxes.org binning to simple TAB-separated
+
+#create temporary directory in /tmp
+TMP_DIR="$(mktemp -d)"
+
+# Convert binning files to two-column TSV
+TAX_ASSIGNMENTS="$TMP_DIR/prediction.tax"
+binning2tax "$BINNING_ASSIGNMENTS" > "$TAX_ASSIGNMENTS"
+TAX_TRUE="$TMP_DIR/label.tax"
+binning2tax "$BINNING_TRUE" > "$TAX_TRUE"
 
 # if /bbx/metadata is mounted create log.txt
 if [ -d "$METADATA" ]; then

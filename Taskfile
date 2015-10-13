@@ -1,4 +1,4 @@
-default: python /opt/algbioi/eval/default_task_eval_ivan.py -b $BINNING_ASSIGNMENTS -t $BINNING_TRUE -f $FASTA -m $SCAFFOLD_CONTIG_MAPPING -n $DATABASES -o $OUTPUT
-precision_recall: python /opt/algbioi/eval/default_task_eval_ivan.py -b $BINNING_ASSIGNMENTS -t $BINNING_TRUE -f $FASTA -m $SCAFFOLD_CONTIG_MAPPING -n $DATABASES -o $OUTPUT -j p
-scaffold_contig_consistency: python /opt/algbioi/eval/default_task_eval_ivan.py -b $BINNING_ASSIGNMENTS -t $BINNING_TRUE -f $FASTA -m $SCAFFOLD_CONTIG_MAPPING -n $DATABASES -o $OUTPUT -j s
-confusion_tables: python /opt/algbioi/eval/default_task_eval_ivan.py -b $BINNING_ASSIGNMENTS -t $BINNING_TRUE -f $FASTA -m $SCAFFOLD_CONTIG_MAPPING -n $DATABASES -o $OUTPUT -j c
+default: python /opt/algbioi/eval/default_task_eval_ivan.py -b $TAX_ASSIGNMENTS -t $TAX_TRUE -f $FASTA -n $DATABASES -o $OUTPUT
+precision_recall: python /opt/algbioi/eval/default_task_eval_ivan.py -b $TAX_ASSIGNMENTS -t $TAX_TRUE -f $FASTA -n $DATABASES -o $OUTPUT -j p
+scaffold_contig_consistency: python /opt/algbioi/eval/default_task_eval_ivan.py -b $TAX_ASSIGNMENTS -t $TAX_TRUE -m $SCAFFOLD_CONTIG_MAPPING -f $FASTA -n $DATABASES -o $OUTPUT -j s
+confusion_tables: python /opt/algbioi/eval/default_task_eval_ivan.py -b $TAX_ASSIGNMENTS -t $TAX_TRUE -f $FASTA -n $DATABASES -o $OUTPUT -j c
