@@ -178,6 +178,7 @@ def createEvalMetaFile(outputDir):
 
     metaOut = csv.OutFileBuffer(os.path.join(outputDir, 'biobox.yaml'))
     # creates a metafile describing the results
+    metaOut.writeText("---\n")
     metaOut.writeText("version: 0.1.1\n")
     metaOut.writeText("results:\n")
     if os.path.isfile(outputDir + "/" + precisionRecallFile):
