@@ -31,7 +31,7 @@ fi
 
 # Parse the read locations from this file
 FASTA=$(yaml2json < $INPUT  | jq --raw-output '.arguments[] | select(.fasta) | .fasta | .value  ' )
-BINNING_TRUE=$(yaml2json < $INPUT | jq --raw-output ' .arguments[] | select(.binning) | .binning[] | select(.type == true) | .value ' )
+BINNING_TRUE=$(yaml2json < $INPUT | jq --raw-output ' .arguments[] | select(.binning) | .binning[] | select(.type == "true") | .value ' )
 BINNING_ASSIGNMENTS=$(yaml2json < $INPUT  | jq --raw-output ' .arguments[] | select(.binning) | .binning[] | select(.type == "assignments") | .value ')
 SCAFFOLD_CONTIG_MAPPING=$(yaml2json < $INPUT  | jq --raw-output '  .arguments[] | select(.scaffold_contig_mapping) | .scaffold_contig_mapping ')
 DATABASES=$(yaml2json < $INPUT  | jq --raw-output ' .arguments[] | select(.databases) | .databases[] | select(.id == "ncbi_taxonomy") | .value ')
