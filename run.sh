@@ -30,11 +30,10 @@ if ! [ -d "$OUTPUT" ]; then
 fi
 
 # Parse the read locations from this file
-FASTA=$(yaml2json < $INPUT  | jq --raw-output '.arguments[] | select(.fasta) | .fasta | .value  ' )
-BINNING_TRUE=$(yaml2json < $INPUT | jq --raw-output ' .arguments[] | select(.binning) | .binning[] | select(.type == "true") | .value ' )
-BINNING_ASSIGNMENTS=$(yaml2json < $INPUT  | jq --raw-output ' .arguments[] | select(.binning) | .binning[] | select(.type == "assignments") | .value ')
-SCAFFOLD_CONTIG_MAPPING=$(yaml2json < $INPUT  | jq --raw-output '  .arguments[] | select(.scaffold_contig_mapping) | .scaffold_contig_mapping ')
-DATABASES=$(yaml2json < $INPUT  | jq --raw-output ' .arguments[] | select(.databases) | .databases[] | select(.id == "ncbi_taxonomy") | .value ')
+FASTA=$(yaml2json < $INPUT  | jq --raw-output '.arguments.sequences.path')
+BINNING_TRUE=$(yaml2json < $INPUT | jq --raw-output '.arguments.labels.path')
+BINNING_ASSIGNMENTS=$(yaml2json < $INPUT  | jq --raw-output '.arguments.predictions.path')
+DATABASES=$(yaml2json < $INPUT  | jq --raw-output '.arguments.databases.taxonomy.path')
 
 # Use grep to get $TASK in /Taskfile
 CMD=$(egrep ^${TASK}: /Taskfile | cut -f 2 -d ':')
