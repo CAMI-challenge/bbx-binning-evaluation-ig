@@ -19,9 +19,9 @@ mkdir -p "$CACHE"
 TASK=${1:-default}
 
 # Ensure the biobox.yaml file is valid
-validate-biobox-file \
-  --input ${INPUT} \
-  --schema /schema.yaml \
+#validate-biobox-file \
+#  --input ${INPUT} \
+#  --schema /schema.yaml \
 
 # check if output folder exists/is mounted
 if ! [ -d "$OUTPUT" ]; then
