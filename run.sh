@@ -7,7 +7,7 @@ set -o errexit
 set -o nounset
 
 INPUT="${BBX_MNTDIR:-/bbx}/mnt/input/biobox.yaml"
-OUTPUT="${BBX_MNTDIR:-/bbx}/output"
+OUTPUT="${BBX_MNTDIR:-/bbx}/mnt/output"
 METADATA=/bbx/metadata
 
 # create cache
