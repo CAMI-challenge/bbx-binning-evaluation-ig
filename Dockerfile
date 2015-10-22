@@ -28,9 +28,6 @@ ENV JQ http://stedolan.github.io/jq/download/linux64/jq
 # download jq and make it executable
 RUN cd /usr/local/bin && wget --quiet ${JQ} && chmod 700 jq
 
-# add input_schema.yaml
-ADD schema.yaml /
-
 # add run script
 ADD run.sh /usr/local/bin/
 
