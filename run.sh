@@ -6,7 +6,7 @@ set -o errexit
 # exit script if Variable is not set
 set -o nounset
 
-INPUT="${BBX_MNTDIR:-/bbx}/input/biobox.yaml"
+INPUT="${BBX_MNTDIR:-/bbx}/mnt/input/biobox.yaml"
 OUTPUT="${BBX_MNTDIR:-/bbx}/output"
 METADATA=/bbx/metadata
 
