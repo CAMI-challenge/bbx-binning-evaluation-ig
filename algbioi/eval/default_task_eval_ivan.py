@@ -185,20 +185,20 @@ def createEvalMetaFile(outputDir):
         metaOut.writeText('''  - name: Precision and recall
     type: csv
     description: Precision and recall
-    inline:false
+    inline: false
     value:  %s\n''' % precisionRecallFile)
 
     if os.path.isfile(outputDir + "/" + precisionRecallCorrectionFile):
         metaOut.writeText('''  - name: Precision and recall with correction
     type: csv
-    inline:false
+    inline: false
     description: Precision and recall with correction
     value: %s\n''' % precisionRecallCorrectionFile)
 
     if os.path.isfile(outputDir + "/" + consistencyFile):
                 metaOut.writeText('''  - name: Consistency
     type: txt
-    inline:false
+    inline: false
     description: Consistency
     value: %s\n''' % consistencyFile)
 
