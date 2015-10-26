@@ -11,6 +11,7 @@ properties:
     type: "string"
     pattern: "^0.10.\\d+$"
   arguments: 
+    additionalProperties: false
     type: object
     required:
        - labels
