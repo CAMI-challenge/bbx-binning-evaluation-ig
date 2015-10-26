@@ -10,6 +10,9 @@ INPUT="${BBX_MNTDIR:-/bbx}/mnt/input/biobox.yaml"
 OUTPUT="${BBX_MNTDIR:-/bbx}/mnt/output"
 METADATA=/bbx/metadata
 
+#validate yaml
+validate-biobox-file --schema /schema.yml --input $INPUT
+
 # create cache
 CACHE="${BBX_CACHEDIR:-/bbx/mnt/cache}"
 mkdir -p "$CACHE"

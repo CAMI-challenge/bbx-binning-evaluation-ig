@@ -31,6 +31,8 @@ RUN cd /usr/local/bin && wget --quiet ${JQ} && chmod 700 jq
 # add run script
 ADD run.sh /usr/local/bin/
 
+ADD schema.yaml /
+
 # add Tasks
 ADD Taskfile /
 
