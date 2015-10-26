@@ -8,7 +8,7 @@ set -o nounset
 
 INPUT="${BBX_MNTDIR:-/bbx}/mnt/input/biobox.yaml"
 OUTPUT="${BBX_MNTDIR:-/bbx}/mnt/output"
-METADATA=/bbx/mnt/metadata
+METADATA="${BBX_MNTDIR:-/bbx}/bbx/mnt/metadata"
 
 #validate yaml
 validate-biobox-file --schema /schema.yaml --input $INPUT
