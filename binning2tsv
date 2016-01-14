@@ -1,0 +1,86 @@
+#!/usr/bin/env python
+# Convert bioboxes.org binning files (version 0.9) to a simple
+# TAB-separated files with two columns
+# Author: johannes.droge@uni-duesseldorf.de
+
+coltags = { "taxon" : "taxid", "classname" : "binid" }
+
+if __name__ == "__main__":
+  import getopt
+  from sys import stdin, stdout, stderr, argv
+  from itertools import count
+  import signal
+  signal.signal(signal.SIGPIPE, signal.SIG_DFL)  # handle broken pipes
+
+  # information on usage
+  usage = "Usage: %s --type [taxon|classname]\n" % argv[0]
+
+  # parse command line options
+  try:
+    opts, args = getopt.getopt(argv[1:], "ht:", ["help", "type="])
+  except getopt.GetoptError, err:
+    # print help information and exit:
+    stderr.write(str(err)) # will print something like "option -a not recognized"
+    stderr.write(usage)
+    exit(2)
+
+  # defaults
+  matchtag = "taxid"
+  
+  # option parsing
+  for o, a in opts:
+    if o in ("-h", "--help"):
+      stdout.write(usage)
+      exit()
+    elif o in ("-t", "--type"):
+      try:
+        matchtag = coltags[a]
+      except KeyError:
+        stderr.write(usage)
+        exit(1)
+    else:
+      assert False, "unhandled option"
+
+  # process file header
+  line_no = 0
+  headertags = {}
+  colindex = None
+  colindex_default = 1
+  for line in stdin:
+    line_no += 1
+
+    if not line or line[0] in "#\n":  # ignore empty lines and comments
+      pass
+
+    elif line[0] == "@":
+      if len(line) > 1 and line[1] != "@":
+        # parse tags
+        tag, val = line[1:].rstrip().split(":", 2)[:2]
+        headertags[tag] = val
+      else:
+        # process column titles
+        assert line[1] == "@"
+        colnames = line[2:].rstrip().split("\t")
+        assert colnames[0].lower() == "sequenceid"
+        for i, name in zip(count(1), colnames[1:]):
+          if name.lower() == matchtag:
+            colindex = i
+            break
+        break
+  if colindex is None:
+    stderr.write("Column header for --type %s not found or not in bioboxes.org binning format (0.9).\n" % matchtag)
+    exit(1)
+  
+  # process body
+  maxsplit = colindex + 1
+  for line in stdin:
+    line_no += 1
+
+    if not line or line[0] in "#\n":  # ignore empty lines and comments
+      continue
+    
+    try:
+      fields = line.rstrip().split("\t", maxsplit)
+      stdout.write("%s\t%s\n" % (fields[0], fields[colindex]))
+    except IndexError:
+      stderr.write("Error parsing field %i in input line %i, skipping entry.\n" % (colindex+1, line_no) )
